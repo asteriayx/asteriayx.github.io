@@ -1,0 +1,1432 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=dark>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yuxin">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文记录在 LubanCat-3 开发板（RK3576，Ubuntu 22.04.5，内核 6.1.99-rk3576）上编译安装 Realtek RTL8851BU WiFi+蓝牙 combo 驱动的完整过程。提供一键安装脚本，也详解每个步骤的原理和踩坑经验。 适用环境：LubanCat-3 &#x2F; RK3576 &#x2F; Ubuntu 22.04 &#x2F; Kernel 6.1.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程">
+<meta property="og:url" content="https://asteriayx.github.io/embedded/lubancat3-rtl8851bu-wifi-bt-driver/index.html">
+<meta property="og:site_name" content="Asteriayx">
+<meta property="og:description" content="本文记录在 LubanCat-3 开发板（RK3576，Ubuntu 22.04.5，内核 6.1.99-rk3576）上编译安装 Realtek RTL8851BU WiFi+蓝牙 combo 驱动的完整过程。提供一键安装脚本，也详解每个步骤的原理和踩坑经验。 适用环境：LubanCat-3 &#x2F; RK3576 &#x2F; Ubuntu 22.04 &#x2F; Kernel 6.1.">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-06T20:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-03T09:52:17.293Z">
+<meta property="article:author" content="Asteriayx">
+<meta property="article:tag" content="Linux内核模块">
+<meta property="article:tag" content="LubanCat-3">
+<meta property="article:tag" content="RK3576">
+<meta property="article:tag" content="RTL8851BU">
+<meta property="article:tag" content="WiFi驱动">
+<meta property="article:tag" content="蓝牙驱动">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程 - Asteriayx</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.1.0/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
+<link rel="stylesheet" href="/css/custom.css">
+<link rel="stylesheet" href="/css/muse-assistant.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"asteriayx.github.io","root":"/","version":"1.9.9","typing":{"enable":true,"typeSpeed":70,"cursorChar":"","loop":false,"scope":["home"]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"expand_all":true,"placement":"left","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"openkounter":{"server_url":"https://open-kounter.mintimate.cn","path":"window.location.pathname","ignore_local":false},"umami":{"src":"https://cloud.umami.is/script.js","website_id":"9972e632-71e5-427b-b3da-9bcf973ae8e9","domains":"asteriayx.github.io","start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        let umami = document.createElement('script');
+        umami.async = true;
+        umami.src = "https://cloud.umami.is/script.js";
+        umami.setAttribute("data-website-id", "9972e632-71e5-427b-b3da-9bcf973ae8e9");
+        umami.setAttribute("data-domains", "asteriayx.github.io");
+        document.head.appendChild(umami);
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Asteria</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content (desktop) -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/docs/" target="_self">
+                
+                <span>文档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/resources/" target="_self">
+                
+                <span>资源</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/projects/" target="_self">
+                
+                <span>开源</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/download/" target="_self">
+                
+                <span>下载</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile grid menu overlay -->
+<div id="mobile-grid-menu" class="d-lg-none">
+  <div class="mobile-grid-menu-inner">
+    <div class="container">
+      <div class="row">
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-home-fill"></i>
+                  <span>首页</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/archives/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-archive-fill"></i>
+                  <span>归档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/docs/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>文档</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/resources/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>资源</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/projects/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>开源</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/download/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-link-fill"></i>
+                  <span>下载</span>
+                </div>
+              </a>
+            </div>
+          
+        
+          
+          
+          
+          
+            <div class="col-4 mobile-grid-cell">
+              <a href="/about/" target="_self">
+                <div class="mobile-grid-item">
+                  <i class="iconfont icon-user-fill"></i>
+                  <span>关于</span>
+                </div>
+              </a>
+            </div>
+          
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-search-btn">
+            <a href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-search"></i>
+                <span>搜索</span>
+              </div>
+            </a>
+          </div>
+        
+        
+          <div class="col-4 mobile-grid-cell" id="mobile-color-toggle-btn"
+               data-label-light="开灯"
+               data-label-dark="关灯">
+            <a href="javascript:;" aria-label="Color Toggle">
+              <div class="mobile-grid-item">
+                <i class="iconfont icon-dark" id="mobile-color-toggle-icon"></i>
+                <span id="mobile-color-toggle-label">关灯</span>
+              </div>
+            </a>
+          </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/index_banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-06 20:00" pubdate>
+          2026年8月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          71 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="padding-left: 2rem; margin-right: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2026-09-03T09:52:17+00:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>本文记录在 LubanCat-3 开发板（RK3576，Ubuntu 22.04.5，内核 6.1.99-rk3576）上编译安装 Realtek RTL8851BU WiFi+蓝牙 combo 驱动的完整过程。提供一键安装脚本，也详解每个步骤的原理和踩坑经验。</p>
+<p>适用环境：LubanCat-3 &#x2F; RK3576 &#x2F; Ubuntu 22.04 &#x2F; Kernel 6.1.99-rk3576<br>目标芯片：Realtek RTL8851BU（WiFi 6 + BT 5.3 combo）<br>USB 设备 ID：<code>0bda:1a2b</code>（CDROM 模式）→ <code>0bda:b851</code>（WiFi+BT 模式）</p>
+<h2 id="资源下载"><a href="#资源下载" class="headerlink" title="资源下载"></a>资源下载</h2><p>本文所用驱动源码、固件及一键安装脚本已打包：</p>
+<blockquote>
+<p><a href="/download/wifi_linux.zip">wifi_linux.zip</a>（约 11.2 MB，含 WiFi&#x2F;BT 源码 + <code>lubancat3_rtk_fix.sh</code> 一键脚本）</p>
+</blockquote>
+<p>解压后目录结构：</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nix">wifi_linux<span class="hljs-symbol">/</span><br>├── lubancat3_rtk_fix.sh   <span class="hljs-comment"># 一键安装脚本</span><br>└── Linux<span class="hljs-symbol">/</span><br>    ├── WIFI<span class="hljs-symbol">/</span>              <span class="hljs-comment"># 8851bu WiFi 驱动源码</span><br>    └── BT<span class="hljs-symbol">/</span>                <span class="hljs-comment"># rtk_btusb 蓝牙驱动源码 + 固件</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="1-快速开始（一键安装）"><a href="#1-快速开始（一键安装）" class="headerlink" title="1. 快速开始（一键安装）"></a>1. 快速开始（一键安装）</h2><p>如果你只想尽快跑起来，三步搞定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 1. 解压</span><br>unzip wifi_linux.zip<br><span class="hljs-built_in">cd</span> wifi_linux<br><br><span class="hljs-comment"># 2. 给脚本执行权限</span><br><span class="hljs-built_in">chmod</span> +x lubancat3_rtk_fix.sh<br><br><span class="hljs-comment"># 3. 一键执行（需要 sudo）</span><br><span class="hljs-built_in">sudo</span> ./lubancat3_rtk_fix.sh<br></code></pre></td></tr></table></figure>
+
+<p>脚本会自动完成以下全部流程：安装编译依赖 → 修复源码 bug → 编译 WiFi 驱动 → 安装 WiFi 驱动 → 复制蓝牙固件 → 编译蓝牙驱动 → 安装蓝牙驱动 → USB 模式切换 → 加载模块 → 验证结果。</p>
+<p>整个过程约 12 分钟（主要耗时在编译）。执行完毕后如果 <code>wlan0</code> 没有立即出现，等几秒或 <code>sudo reboot</code> 重启即可。</p>
+<p>下面详细介绍每个步骤的原理，方便遇到问题时排查。</p>
+<h2 id="2-环境准备"><a href="#2-环境准备" class="headerlink" title="2. 环境准备"></a>2. 环境准备</h2><h3 id="2-1-确认系统信息"><a href="#2-1-确认系统信息" class="headerlink" title="2.1 确认系统信息"></a>2.1 确认系统信息</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">uname</span> -a<br><span class="hljs-comment"># Linux lubancat 6.1.99-rk3576 #... SMP ... aarch64 aarch64 aarch64 GNU/Linux</span><br><br><span class="hljs-built_in">cat</span> /etc/os-release<br><span class="hljs-comment"># Ubuntu 22.04.5 LTS</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-安装编译工具链"><a href="#2-2-安装编译工具链" class="headerlink" title="2.2 安装编译工具链"></a>2.2 安装编译工具链</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> apt-get update<br><span class="hljs-built_in">sudo</span> apt-get install -y build-essential linux-headers-$(<span class="hljs-built_in">uname</span> -r) git python3-usb<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>注意</strong>：<code>python3-usb</code>（pyusb）后续用于 USB 模式切换，务必提前安装。</p>
+</blockquote>
+<h3 id="2-3-准备驱动源码"><a href="#2-3-准备驱动源码" class="headerlink" title="2.3 准备驱动源码"></a>2.3 准备驱动源码</h3><p>将下载的 <code>wifi_linux.zip</code> 传到开发板（通过 U 盘、scp 或其他方式），解压：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">unzip wifi_linux.zip<br><span class="hljs-built_in">cd</span> wifi_linux/Linux<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-编译-WiFi-驱动-8851bu"><a href="#3-编译-WiFi-驱动-8851bu" class="headerlink" title="3. 编译 WiFi 驱动 (8851bu)"></a>3. 编译 WiFi 驱动 (8851bu)</h2><h3 id="3-1-修复源码-bug"><a href="#3-1-修复源码-bug" class="headerlink" title="3.1 修复源码 bug"></a>3.1 修复源码 bug</h3><p>打开 <code>WIFI/phl/phl_regulation_def.h</code>，有一处 <code>sizeof</code> 写错了结构体类型，会导致编译报 <code>sizeof-array-div</code> 错误。</p>
+<p><strong>Bug 位置 — 第 114 行附近，<code>PHL_GET_CHDEF_6G</code> 宏：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// 错误写法</span><br>u8 size = <span class="hljs-keyword">sizeof</span>(_chdef_tbl_) / <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> regulatory_domain_mapping_6g);<br><br><span class="hljs-comment">// 正确写法</span><br>u8 size = <span class="hljs-keyword">sizeof</span>(_chdef_tbl_) / <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> chdef_6ghz);<br></code></pre></td></tr></table></figure>
+
+<p>一键脚本中已包含自动修复逻辑，会精确定位 <code>PHL_GET_CHDEF_6G</code> 宏并替换，不会影响第 122 行的 <code>PHL_GET_DOMAIN_INDEX_6G</code> 宏（那个是正确的）。</p>
+<p>手动修复命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> WIFI<br>sed -i <span class="hljs-string">&#x27;/PHL_GET_CHDEF_6G/,/;/ s/sizeof(struct regulatory_domain_mapping_6g)/sizeof(struct chdef_6ghz)/&#x27;</span> phl/phl_regulation_def.h<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-编译驱动"><a href="#3-2-编译驱动" class="headerlink" title="3.2 编译驱动"></a>3.2 编译驱动</h3><p><strong>关键</strong>：必须显式指定 <code>ARCH=arm64</code>，不能依赖 <code>uname -m</code> 的默认值（会返回 <code>aarch64</code>，但内核目录是 <code>arch/arm64/</code>）。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> WIFI<br><span class="hljs-built_in">sudo</span> make all ARCH=arm64<br></code></pre></td></tr></table></figure>
+
+<p>编译时间约 10 分钟。如果通过 SSH 操作，建议用 <code>nohup</code> 放到后台避免超时：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">nohup</span> <span class="hljs-built_in">sudo</span> make all ARCH=arm64 &gt; /tmp/wifi_build.log 2&gt;&amp;1 &amp;<br><span class="hljs-built_in">tail</span> -f /tmp/wifi_build.log<br></code></pre></td></tr></table></figure>
+
+<p>编译成功后生成 <code>8851bu.ko</code>（约 10.8MB）。</p>
+<h3 id="3-3-安装并加载-WiFi-模块"><a href="#3-3-安装并加载-WiFi-模块" class="headerlink" title="3.3 安装并加载 WiFi 模块"></a>3.3 安装并加载 WiFi 模块</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> 8851bu.ko /lib/modules/$(<span class="hljs-built_in">uname</span> -r)/kernel/drivers/net/wireless/<br><span class="hljs-built_in">sudo</span> depmod -a<br><span class="hljs-built_in">sudo</span> modprobe 8851bu<br><br><span class="hljs-comment"># 验证</span><br>lsmod | grep 8851bu<br><span class="hljs-comment"># 8851bu    6148096  0</span><br><br>dmesg | <span class="hljs-built_in">tail</span> -5<br><span class="hljs-comment"># RTW: module init start</span><br><span class="hljs-comment"># RTW: rtl8851bu v1.19.10-...</span><br><span class="hljs-comment"># RTW: rtw_inetaddr_notifier_register</span><br><span class="hljs-comment"># usbcore: registered new interface driver rtl8851bu</span><br><span class="hljs-comment"># RTW: module init ret=0</span><br></code></pre></td></tr></table></figure>
+
+<p>此时 <code>8851bu</code> 模块已加载，但由于 USB 设备还在 CDROM 模式，<strong>wlan0 接口不会出现</strong>。需要先完成 USB 模式切换。</p>
+<h2 id="4-编译安装蓝牙驱动-rtk-btusb"><a href="#4-编译安装蓝牙驱动-rtk-btusb" class="headerlink" title="4. 编译安装蓝牙驱动 (rtk_btusb)"></a>4. 编译安装蓝牙驱动 (rtk_btusb)</h2><h3 id="4-1-复制固件文件"><a href="#4-1-复制固件文件" class="headerlink" title="4.1 复制固件文件"></a>4.1 复制固件文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> BT/rtkbt-firmware/lib/firmware/rtl8851bu_* /lib/firmware/<br><span class="hljs-built_in">ls</span> /lib/firmware/rtl8851bu*<br><span class="hljs-comment"># /lib/firmware/rtl8851bu_config</span><br><span class="hljs-comment"># /lib/firmware/rtl8851bu_fw</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-2-编译蓝牙驱动"><a href="#4-2-编译蓝牙驱动" class="headerlink" title="4.2 编译蓝牙驱动"></a>4.2 编译蓝牙驱动</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> BT/usb<br><span class="hljs-built_in">sudo</span> make all ARCH=arm64<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-安装并加载蓝牙模块"><a href="#4-3-安装并加载蓝牙模块" class="headerlink" title="4.3 安装并加载蓝牙模块"></a>4.3 安装并加载蓝牙模块</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> rtk_btusb.ko /lib/modules/$(<span class="hljs-built_in">uname</span> -r)/kernel/drivers/bluetooth/<br><span class="hljs-built_in">sudo</span> depmod -a<br><span class="hljs-built_in">sudo</span> modprobe rtk_btusb<br><br><span class="hljs-comment"># 验证</span><br>lsmod | grep rtk_btusb<br><span class="hljs-comment"># rtk_btusb    77824  0</span><br><br>dmesg | grep rtk_btusb<br><span class="hljs-comment"># rtk_btusb: Realtek Bluetooth USB driver ver 3.1...</span><br><span class="hljs-comment"># usbcore: registered new interface driver rtk_btusb</span><br></code></pre></td></tr></table></figure>
+
+<p>蓝牙模块加载完成，但同样需要 USB 模式切换后才能看到 <code>hci0</code> 设备。</p>
+<h2 id="5-USB-模式切换（核心难点）"><a href="#5-USB-模式切换（核心难点）" class="headerlink" title="5. USB 模式切换（核心难点）"></a>5. USB 模式切换（核心难点）</h2><p>这是整个流程中最关键的一步。RTL8851BU 的 USB 设备初始状态是 <strong>CDROM&#x2F;Mass Storage 模式</strong>（用于 Windows 安装驱动），需要发送特定 SCSI 命令切换到 WiFi+BT 模式。</p>
+<h3 id="5-1-确认当前状态"><a href="#5-1-确认当前状态" class="headerlink" title="5.1 确认当前状态"></a>5.1 确认当前状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">lsusb<br><span class="hljs-comment"># Bus 001 Device 003: ID 0bda:1a2b Realtek Semiconductor Corp. RTL8188GU 802.11n WLAN Adapter (Driver CDROM Mode)</span><br></code></pre></td></tr></table></figure>
+
+<p>设备显示为 <code>0bda:1a2b</code>，Product 字符串为 “DISK”，bInterfaceClass 为 Mass Storage (8)。这就是 CDROM 模式。</p>
+<h3 id="5-2-尝试-usb-modeswitch（失败）"><a href="#5-2-尝试-usb-modeswitch（失败）" class="headerlink" title="5.2 尝试 usb_modeswitch（失败）"></a>5.2 尝试 usb_modeswitch（失败）</h3><p>最常见的思路是用 <code>usb_modeswitch</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 方法 1：Windows 扩展描述符</span><br><span class="hljs-built_in">sudo</span> usb_modeswitch -W -v 0bda -p 1a2b<br><span class="hljs-comment"># 结果：Warning: no switching method given</span><br><br><span class="hljs-comment"># 方法 2：标准 SCSI eject</span><br><span class="hljs-built_in">sudo</span> usb_modeswitch -J -v 0bda -p 1a2b<br><span class="hljs-comment"># 结果：OK, message successfully sent — 但设备没有任何变化</span><br><br><span class="hljs-comment"># 方法 3：创建配置文件</span><br><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /usr/share/usb_modeswitch/0bda:1a2b &lt;&lt; <span class="hljs-string">EOF</span><br><span class="hljs-string">TargetVendor=0x0bda</span><br><span class="hljs-string">TargetProduct=0x8851</span><br><span class="hljs-string">StandardEject=1</span><br><span class="hljs-string">EOF</span><br><span class="hljs-built_in">sudo</span> usb_modeswitch -v 0bda -p 1a2b<br><span class="hljs-comment"># 结果：仍然无效</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>结论</strong>：<code>usb_modeswitch</code> 的所有标准方法对 <code>0bda:1a2b</code> 均无效。</p>
+</blockquote>
+<h3 id="5-3-成功方案：pyusb-直接发送-SCSI-命令"><a href="#5-3-成功方案：pyusb-直接发送-SCSI-命令" class="headerlink" title="5.3 成功方案：pyusb 直接发送 SCSI 命令"></a>5.3 成功方案：pyusb 直接发送 SCSI 命令</h3><p>通过 Python pyusb 库直接向 USB 设备发送 Bulk-Only Transport (BOT) 协议的 SCSI 命令。</p>
+<p><strong>原理</strong>：USB Mass Storage 设备使用 BOT 协议通信，主机通过 Bulk OUT 端点发送 Command Block Wrapper (CBW, 31字节)，设备通过 Bulk IN 端点返回 Command Status Wrapper (CSW, 13字节)。切换流程分两步：先发 <code>ALLOW MEDIUM REMOVAL</code>（0x1e）解除介质锁定，再发 <code>START STOP UNIT</code>（0x1b）带 Load&#x2F;Eject 位触发模式切换。</p>
+<p>一键脚本中已内嵌了完整的 Python 切换逻辑。如需手动执行，核心代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/env python3</span><br><span class="hljs-keyword">import</span> usb.core<br><span class="hljs-keyword">import</span> struct<br><span class="hljs-keyword">import</span> time<br><br>dev = usb.core.find(idVendor=<span class="hljs-number">0x0bda</span>, idProduct=<span class="hljs-number">0x1a2b</span>)<br><span class="hljs-keyword">if</span> dev <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;设备未处于 CDROM 模式&quot;</span>)<br>    exit(<span class="hljs-number">0</span>)<br><br><span class="hljs-comment"># 解除内核驱动绑定</span><br><span class="hljs-keyword">if</span> dev.is_kernel_driver_active(<span class="hljs-number">0</span>):<br>    dev.detach_kernel_driver(<span class="hljs-number">0</span>)<br><br><span class="hljs-comment"># 获取端点</span><br>cfg = dev.get_active_configuration()<br>intf = cfg[(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>)]<br>ep_out = ep_in = <span class="hljs-literal">None</span><br><span class="hljs-keyword">for</span> ep <span class="hljs-keyword">in</span> intf:<br>    <span class="hljs-keyword">if</span> usb.util.endpoint_direction(ep.bEndpointAddress) == usb.util.ENDPOINT_OUT:<br>        ep_out = ep<br>    <span class="hljs-keyword">else</span>:<br>        ep_in = ep<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">send_scsi</span>(<span class="hljs-params">cmd, tag</span>):<br>    cbw = struct.pack(<span class="hljs-string">&#x27;&lt;IIIB&#x27;</span>, <span class="hljs-number">0x43425355</span>, tag, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)<br>    cbw += struct.pack(<span class="hljs-string">&#x27;&lt;BB&#x27;</span>, <span class="hljs-number">0</span>, <span class="hljs-built_in">len</span>(cmd))<br>    cbw += cmd + <span class="hljs-string">b&#x27;\x00&#x27;</span> * (<span class="hljs-number">31</span> - <span class="hljs-number">6</span> - <span class="hljs-built_in">len</span>(cmd))<br>    dev.write(ep_out.bEndpointAddress, cbw, timeout=<span class="hljs-number">5000</span>)<br>    <span class="hljs-keyword">try</span>:<br>        dev.read(ep_in.bEndpointAddress, <span class="hljs-number">13</span>, timeout=<span class="hljs-number">3000</span>)<br>    <span class="hljs-keyword">except</span>:<br>        <span class="hljs-keyword">pass</span><br><br><span class="hljs-comment"># 步骤 1：ALLOW MEDIUM REMOVAL</span><br>send_scsi(<span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x1e</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]), <span class="hljs-number">1</span>)<br>time.sleep(<span class="hljs-number">0.5</span>)<br><br><span class="hljs-comment"># 步骤 2：START STOP UNIT (eject)</span><br>send_scsi(<span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x1b</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0x02</span>, <span class="hljs-number">0</span>]), <span class="hljs-number">2</span>)<br>time.sleep(<span class="hljs-number">2</span>)<br><br><span class="hljs-comment"># 验证</span><br><span class="hljs-keyword">if</span> usb.core.find(idVendor=<span class="hljs-number">0x0bda</span>, idProduct=<span class="hljs-number">0x1a2b</span>) <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;切换成功!&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> python3 usb_switch.py<br></code></pre></td></tr></table></figure>
+
+<p><strong>预期输出</strong>：</p>
+<figure class="highlight erlang-repl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs erlang-repl">切换成功!<br></code></pre></td></tr></table></figure>
+
+<h3 id="5-4-切换后的设备信息"><a href="#5-4-切换后的设备信息" class="headerlink" title="5.4 切换后的设备信息"></a>5.4 切换后的设备信息</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">lsusb<br><span class="hljs-comment"># Bus 001 Device 009: ID 0bda:b851 Realtek Semiconductor Corp. 802.11ax WLAN Adapter</span><br><br>lsusb -t<br><span class="hljs-comment">#     |__ Port 1: Dev 9, If 2, Class=Vendor Specific Class, Driver=rtl8851bu, 480M</span><br><span class="hljs-comment">#     |__ Port 1: Dev 9, If 0, Class=Wireless, Driver=rtk_btusb, 480M</span><br><span class="hljs-comment">#     |__ Port 1: Dev 9, If 1, Class=Wireless, Driver=rtk_btusb, 480M</span><br></code></pre></td></tr></table></figure>
+
+<p>设备现在暴露了 3 个接口：If 0&#x2F;1 是 Bluetooth（<code>rtk_btusb</code> 驱动），If 2 是 WiFi（<code>rtl8851bu</code> 驱动）。</p>
+<h2 id="6-验证功能"><a href="#6-验证功能" class="headerlink" title="6. 验证功能"></a>6. 验证功能</h2><h3 id="6-1-WiFi"><a href="#6-1-WiFi" class="headerlink" title="6.1 WiFi"></a>6.1 WiFi</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">ip <span class="hljs-built_in">link</span> show wlan0<br><span class="hljs-comment"># 7: wlan0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; ... state UP</span><br><br>iwconfig wlan0<br><span class="hljs-comment"># wlan0  IEEE 802.11AX  ESSID:&quot;CMCC-pu5E-5G&quot;</span><br><span class="hljs-comment">#        Mode:Managed  Frequency:5.24 GHz  Access Point: AC:56:7B:95:20:61</span><br><span class="hljs-comment">#        Bit Rate:600 Mb/s  Signal level=62/100</span><br><br><span class="hljs-comment"># 连接 WiFi（如未自动连接）</span><br>nmcli device wifi list<br>nmcli device wifi connect &lt;SSID&gt; password &lt;密码&gt;<br><br><span class="hljs-comment"># 测试网络</span><br>ping -c 3 8.8.8.8<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-2-蓝牙"><a href="#6-2-蓝牙" class="headerlink" title="6.2 蓝牙"></a>6.2 蓝牙</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">hciconfig hci0<br><span class="hljs-comment"># hci0:  Type: Primary  Bus: USB</span><br><span class="hljs-comment">#        BD Address: 6C:1F:F7:E6:32:98  ACL MTU: 1021:8  SCO MTU: 255:12</span><br><span class="hljs-comment">#        UP RUNNING</span><br><br>rfkill list<br><span class="hljs-comment"># 0: hci0: Bluetooth    Soft blocked: no    Hard blocked: no</span><br><span class="hljs-comment"># 1: phy0: Wireless LAN  Soft blocked: no    Hard blocked: no</span><br><br><span class="hljs-comment"># 扫描蓝牙设备</span><br><span class="hljs-built_in">sudo</span> hcitool inq<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>补充</strong>：BLE 扫描 <code>hcitool lescan</code> 可能出现 “Input&#x2F;output error”，这是 rtk_btusb 驱动版本对 LE 命令支持不完整导致的，不影响经典蓝牙功能。</p>
+</blockquote>
+<h2 id="7-设置开机自动加载"><a href="#7-设置开机自动加载" class="headerlink" title="7. 设置开机自动加载"></a>7. 设置开机自动加载</h2><h3 id="7-1-模块自动加载"><a href="#7-1-模块自动加载" class="headerlink" title="7.1 模块自动加载"></a>7.1 模块自动加载</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;8851bu&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> -a /etc/modules<br><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;rtk_btusb&quot;</span> | <span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> -a /etc/modules<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-2-USB-模式切换自动化"><a href="#7-2-USB-模式切换自动化" class="headerlink" title="7.2 USB 模式切换自动化"></a>7.2 USB 模式切换自动化</h3><p>创建 systemd 服务，开机自动执行 USB 模式切换：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /usr/local/bin/rtl8851bu_modeswitch.py &lt;&lt; <span class="hljs-string">&#x27;PYEOF&#x27;</span><br><span class="hljs-comment">#!/usr/bin/env python3</span><br><span class="hljs-string">&quot;&quot;</span><span class="hljs-string">&quot;RTL8851BU USB mode switch: CDROM (0bda:1a2b) -&gt; WiFi+BT (0bda:b851)&quot;</span><span class="hljs-string">&quot;&quot;</span><br>import usb.core, struct, <span class="hljs-keyword">time</span>, sys<br><br>def switch_mode():<br>    dev = usb.core.find(idVendor=0x0bda, idProduct=0x1a2b)<br>    <span class="hljs-keyword">if</span> dev is None:<br>        <span class="hljs-built_in">return</span> True<br>    try:<br>        <span class="hljs-keyword">if</span> dev.is_kernel_driver_active(0):<br>            dev.detach_kernel_driver(0)<br>    except:<br>        pass<br>    cfg = dev.get_active_configuration()<br>    intf = cfg[(0, 0)]<br>    ep_out = ep_in = None<br>    <span class="hljs-keyword">for</span> ep <span class="hljs-keyword">in</span> intf:<br>        <span class="hljs-keyword">if</span> usb.util.endpoint_direction(ep.bEndpointAddress) == usb.util.ENDPOINT_OUT:<br>            ep_out = ep<br>        <span class="hljs-keyword">else</span>:<br>            ep_in = ep<br>    <span class="hljs-keyword">if</span> not ep_out or not ep_in:<br>        <span class="hljs-built_in">return</span> False<br>    def send_scsi(cmd, tag):<br>        cbw = struct.pack(<span class="hljs-string">&#x27;&lt;IIIB&#x27;</span>, 0x43425355, tag, 0, 0)<br>        cbw += struct.pack(<span class="hljs-string">&#x27;&lt;BB&#x27;</span>, 0, len(cmd))<br>        cbw += cmd + b<span class="hljs-string">&#x27;\x00&#x27;</span> * (31 - 6 - len(cmd))<br>        dev.write(ep_out.bEndpointAddress, cbw, <span class="hljs-built_in">timeout</span>=5000)<br>        try:<br>            dev.read(ep_in.bEndpointAddress, 13, <span class="hljs-built_in">timeout</span>=3000)<br>        except:<br>            pass<br>    send_scsi(bytes([0x1e, 0, 0, 0, 0, 0]), 1)<br>    time.sleep(0.5)<br>    send_scsi(bytes([0x1b, 0, 0, 0, 0x02, 0]), 2)<br>    time.sleep(2)<br>    <span class="hljs-built_in">return</span> usb.core.find(idVendor=0x0bda, idProduct=0x1a2b) is None<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    sys.exit(0 <span class="hljs-keyword">if</span> switch_mode() <span class="hljs-keyword">else</span> 1)<br>PYEOF<br><br><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">chmod</span> +x /usr/local/bin/rtl8851bu_modeswitch.py<br><br><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/systemd/system/rtl8851bu-modeswitch.service &lt;&lt; <span class="hljs-string">&#x27;EOF&#x27;</span><br>[Unit]<br>Description=RTL8851BU USB Mode Switch<br>After=usb.target<br>Before=NetworkManager.service<br><br>[Service]<br>Type=oneshot<br>ExecStart=/usr/bin/python3 /usr/local/bin/rtl8851bu_modeswitch.py<br>RemainAfterExit=<span class="hljs-built_in">yes</span><br>TimeoutStartSec=15<br><br>[Install]<br>WantedBy=multi-user.target<br>EOF<br><br><span class="hljs-built_in">sudo</span> systemctl daemon-reload<br><span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">enable</span> rtl8851bu-modeswitch.service<br></code></pre></td></tr></table></figure>
+
+<h2 id="8-踩坑总结"><a href="#8-踩坑总结" class="headerlink" title="8. 踩坑总结"></a>8. 踩坑总结</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WiFi 驱动编译报 sizeof-array-div 错误</td>
+<td><code>phl_regulation_def.h</code> 第 114 行 sizeof 使用了错误的结构体类型</td>
+<td>将 <code>sizeof(struct regulatory_domain_mapping_6g)</code> 改为 <code>sizeof(struct chdef_6ghz)</code></td>
+</tr>
+<tr>
+<td>编译报 <code>arch/aarch64/Makefile: No such file</code></td>
+<td>Makefile 默认用 <code>uname -m</code> 得到 <code>aarch64</code>，但内核目录是 <code>arch/arm64/</code></td>
+<td>编译时显式指定 <code>ARCH=arm64</code></td>
+</tr>
+<tr>
+<td>SSH 编译超时</td>
+<td>编译时间超过 SSH 会话超时</td>
+<td>使用 nohup + 后台脚本 + 日志轮询</td>
+</tr>
+<tr>
+<td>USB 设备始终显示为 CDROM 模式</td>
+<td><code>usb_modeswitch</code> 标准方法对 <code>0bda:1a2b</code> 无效</td>
+<td>用 pyusb 发送 SCSI BOT 命令（ALLOW MEDIUM REMOVAL + START STOP UNIT）</td>
+</tr>
+<tr>
+<td>蓝牙 hciconfig 无设备</td>
+<td>USB 设备未切换模式，BT 接口不可见</td>
+<td>先完成 USB 模式切换</td>
+</tr>
+<tr>
+<td>蓝牙 rfkill soft blocked</td>
+<td>某些操作触发了 rfkill 开关</td>
+<td><code>sudo rfkill unblock all</code></td>
+</tr>
+<tr>
+<td>BLE 扫描报 I&#x2F;O error</td>
+<td>rtk_btusb 驱动版本对 LE 命令支持不完整</td>
+<td>不影响经典蓝牙，可尝试更新驱动或换用内核 btusb 模块</td>
+</tr>
+</tbody></table>
+<h2 id="9-参考资料"><a href="#9-参考资料" class="headerlink" title="9. 参考资料"></a>9. 参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.realtek.com/">Realtek RTL8851BU 官方驱动</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.embedfire.com/products/linux/zh/latest/lubancat_3/quick_start.html">LubanCat-3 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.usb.org/document-library/mass-storage-bulk-only-10">USB Bulk-Only Transport 协议规范</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.draisberghof.de/usb_modeswitch/">usb_modeswitch 项目主页</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div class="post-share mt-4">
+  <span class="post-share-label">分享</span>
+  <a class="post-share-btn share-weibo" title="微博"
+     href="javascript:void(0)"
+     onclick="window.open('https://service.weibo.com/share/share.php?url=https%3A%2F%2Fasteriayx.github.io%2Fembedded%2Flubancat3-rtl8851bu-wifi-bt-driver%2F&title=LubanCat-3%20(RK3576)%20%E5%AE%89%E8%A3%85%20Realtek%20RTL8851BU%20WiFi%2B%E8%93%9D%E7%89%99%E9%A9%B1%E5%8A%A8%E5%85%A8%E6%B5%81%E7%A8%8B','_blank','width=615,height=505')">
+    <span class="post-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.12"></circle>
+        <path d="M9.2 16.8c4.3.7 7.9-1.4 7.9-5 0-1.5-.7-2.8-1.8-3.7.2.5.3 1 .3 1.6 0 3.2-3 5.2-6.5 4.6-2.6-.4-4.3-1.9-4.3-3.8 0-1.5 1.1-2.8 3.2-3.4-1.6-.1-3.2.3-4.3 1.3-1 .9-1.6 2.1-1.6 3.4 0 2.7 2.5 4.6 7.1 5z" fill="currentColor"></path>
+        <circle cx="15.8" cy="6.7" r="1.1" fill="currentColor"></circle>
+        <path d="M17.5 5.8c.7-.9 1.7-1.4 2.9-1.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+        <path d="M16.8 8.5c1.4-.1 2.5.3 3.5 1.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+      </svg>
+    </span>
+  </a>
+  <a class="post-share-btn share-qq" title="QQ"
+     href="javascript:void(0)"
+     onclick="window.open('https://connect.qq.com/widget/shareqq/index.html?url=https%3A%2F%2Fasteriayx.github.io%2Fembedded%2Flubancat3-rtl8851bu-wifi-bt-driver%2F&title=LubanCat-3%20(RK3576)%20%E5%AE%89%E8%A3%85%20Realtek%20RTL8851BU%20WiFi%2B%E8%93%9D%E7%89%99%E9%A9%B1%E5%8A%A8%E5%85%A8%E6%B5%81%E7%A8%8B','_blank','width=615,height=505')">
+    <span class="post-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M12 4.1c2.2 0 4 2.2 4 5 0 1.6-.6 2.9-1.6 3.9-.3.3-.4.7-.3 1.1l.4 1.5-1.8-.9a1.7 1.7 0 0 0-1.4 0l-1.8.9.4-1.5c.1-.4 0-.8-.3-1.1-1-1-1.6-2.3-1.6-3.9 0-2.8 1.8-5 4-5z" fill="currentColor"></path>
+        <path d="M8.2 18.2c.8-.5 1.7-.9 2.8-1.2h2c1 .3 2 .7 2.8 1.2.7.4 1.4.7 2.2.7 1.8 0 3-1 3-2.6 0-.4-.1-.8-.4-1.2-.4-.6-.9-1.1-1.5-1.5l-1.5-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        <path d="M5.5 12.5L4 13.6c-.6.4-1.1.9-1.5 1.5-.3.4-.4.8-.4 1.2 0 1.6 1.2 2.6 3 2.6.8 0 1.5-.3 2.2-.7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+      </svg>
+    </span>
+  </a>
+  <a class="post-share-btn share-wechat" title="微信"
+     href="javascript:void(0)"
+     onclick="showWeChatShare()">
+    <span class="post-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M8.3 5c2.9 0 5.2 2 5.2 4.5S11.2 14 8.3 14c-.6 0-1.2-.1-1.7-.3L4 15l.8-2.1c-.9-.8-1.5-2-1.5-3.4C3.3 7 5.5 5 8.3 5z" fill="currentColor"></path>
+        <path d="M16.5 11.2c2.4 0 4.3 1.6 4.3 3.7 0 2-1.9 3.7-4.3 3.7-.5 0-1-.1-1.4-.2L13 19l.6-1.6c-.8-.6-1.3-1.5-1.3-2.5 0-2.1 1.9-3.7 4.2-3.7z" fill="currentColor" opacity="0.82"></path>
+        <circle cx="6.8" cy="9.4" r="0.9" fill="#fff"></circle>
+        <circle cx="9.9" cy="9.4" r="0.9" fill="#fff"></circle>
+        <circle cx="15.1" cy="14.8" r="0.8" fill="#fff"></circle>
+        <circle cx="18" cy="14.8" r="0.8" fill="#fff"></circle>
+      </svg>
+    </span>
+  </a>
+  <a class="post-share-btn share-native" title="全局分享"
+     href="javascript:void(0)"
+     onclick="nativeShare()">
+    <span class="post-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <circle cx="18" cy="5" r="2.5" fill="currentColor"></circle>
+        <circle cx="6" cy="12" r="2.5" fill="currentColor"></circle>
+        <circle cx="18" cy="19" r="2.5" fill="currentColor"></circle>
+        <path d="M8.1 11.1l7.7-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+        <path d="M8.1 12.9l7.7 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+      </svg>
+    </span>
+  </a>
+  <a class="post-share-btn share-copy" title="复制链接"
+     href="javascript:void(0)"
+     onclick="copyShareLink()">
+    <span class="post-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M10.2 8.8H8a3.8 3.8 0 1 0 0 7.6h2.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path d="M13.8 8.8H16a3.8 3.8 0 1 1 0 7.6h-2.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path d="M9.5 12h5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+      </svg>
+    </span>
+  </a>
+  <div class="post-share-toast" id="post-share-toast" aria-live="polite" aria-hidden="true">
+    <span class="post-share-toast-icon">✓</span>
+    <span class="post-share-toast-text">链接已复制</span>
+  </div>
+</div>
+
+<script>
+function copyShareLink() {
+  var btn = document.querySelector('.post-share .share-copy');
+  var toast = document.getElementById('post-share-toast');
+  if (!btn) return;
+  navigator.clipboard.writeText('https://asteriayx.github.io/embedded/lubancat3-rtl8851bu-wifi-bt-driver/').then(function() {
+    btn.classList.add('is-copied');
+    if (toast) {
+      toast.classList.add('is-visible');
+      toast.setAttribute('aria-hidden', 'false');
+    }
+    clearTimeout(btn._copyTimer);
+    clearTimeout(window.__postShareToastTimer);
+    btn._copyTimer = setTimeout(function() {
+      btn.classList.remove('is-copied');
+    }, 1600);
+    window.__postShareToastTimer = setTimeout(function() {
+      if (toast) {
+        toast.classList.remove('is-visible');
+        toast.setAttribute('aria-hidden', 'true');
+      }
+    }, 1800);
+  }).catch(function() {
+    if (toast) {
+      toast.querySelector('.post-share-toast-text').textContent = '请手动复制链接';
+      toast.classList.add('is-visible', 'is-error');
+      toast.setAttribute('aria-hidden', 'false');
+      clearTimeout(window.__postShareToastTimer);
+      window.__postShareToastTimer = setTimeout(function() {
+        toast.classList.remove('is-visible', 'is-error');
+        toast.querySelector('.post-share-toast-text').textContent = '链接已复制';
+        toast.setAttribute('aria-hidden', 'true');
+      }, 2200);
+    }
+    setTimeout(function() {
+      prompt('手动复制链接：', 'https://asteriayx.github.io/embedded/lubancat3-rtl8851bu-wifi-bt-driver/');
+    }, 50);
+  });
+}
+
+function showWeChatShare() {
+  var url = 'https%3A%2F%2Fasteriayx.github.io%2Fembedded%2Flubancat3-rtl8851bu-wifi-bt-driver%2F';
+  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + url;
+  
+  var modal = document.getElementById('wechat-share-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'wechat-share-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    modal.onclick = function() { modal.style.display = 'none'; };
+    
+    var content = document.createElement('div');
+    content.style.cssText = 'background:#fff;padding:20px;border-radius:10px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.2);';
+    content.onclick = function(e) { e.stopPropagation(); };
+    
+    var title = document.createElement('div');
+    title.innerText = '打开微信扫一扫';
+    title.style.cssText = 'margin-bottom:15px;font-weight:bold;color:#333;font-size:1.1rem;';
+    
+    var img = document.createElement('img');
+    img.src = qrUrl;
+    img.style.cssText = 'width:150px;height:150px;display:block;margin:0 auto;';
+    
+    var closeBtn = document.createElement('div');
+    closeBtn.innerText = '关闭';
+    closeBtn.style.cssText = 'margin-top:15px;color:#888;cursor:pointer;font-size:0.9rem;transition:color 0.2s;';
+    closeBtn.onmouseover = function() { closeBtn.style.color = '#333'; };
+    closeBtn.onmouseout = function() { closeBtn.style.color = '#888'; };
+    closeBtn.onclick = function() { modal.style.display = 'none'; };
+    
+    content.appendChild(title);
+    content.appendChild(img);
+    content.appendChild(closeBtn);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+  } else {
+    modal.style.display = 'flex';
+  }
+}
+
+function nativeShare() {
+  if (navigator.share) {
+    navigator.share({
+      title: 'LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程',
+      url: 'https://asteriayx.github.io/embedded/lubancat3-rtl8851bu-wifi-bt-driver/'
+    }).catch(console.error);
+  } else {
+    copyShareLink();
+  }
+}
+</script>
+
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" class="category-chain-item">嵌入式开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LubanCat-3/" class="print-no-link">#LubanCat-3</a>
+      
+        <a href="/tags/RK3576/" class="print-no-link">#RK3576</a>
+      
+        <a href="/tags/RTL8851BU/" class="print-no-link">#RTL8851BU</a>
+      
+        <a href="/tags/WiFi%E9%A9%B1%E5%8A%A8/" class="print-no-link">#WiFi驱动</a>
+      
+        <a href="/tags/%E8%93%9D%E7%89%99%E9%A9%B1%E5%8A%A8/" class="print-no-link">#蓝牙驱动</a>
+      
+        <a href="/tags/Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97/" class="print-no-link">#Linux内核模块</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LubanCat-3 (RK3576) 安装 Realtek RTL8851BU WiFi+蓝牙驱动全流程</div>
+      <div>https://asteriayx.github.io/embedded/lubancat3-rtl8851bu-wifi-bt-driver/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yuxin</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月6日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年9月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/15/markdown-guide/" title="Markdown 常用语法完全指南">
+                        <span class="hidden-mobile">Markdown 常用语法完全指南</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+    <div id="giscus" class="giscus"></div>
+    <script type="text/javascript">
+      Fluid.utils.loadComments('#giscus', function() {
+        var options = {"repo":"asteriayx/my-blog-comments","repo-id":"R_kgDOS7_Xqg","category":"Announcements","category-id":"DIC_kwDOS7_Xqs4C_PnT","theme-light":"light","theme-dark":"dark","mapping":"pathname","reactions-enabled":1,"emit-metadata":0,"input-position":"top","lang":"zh-CN"};
+        var attributes = {};
+        for (let option in options) {
+          if (!option.startsWith('theme-')) {
+            var key = option.startsWith('data-') ? option : 'data-' + option;
+            attributes[key] = options[option];
+          }
+        }
+        var light = 'light';
+        var dark = 'dark';
+        window.GiscusThemeLight = light;
+        window.GiscusThemeDark = dark;
+        attributes['data-theme'] = document.documentElement.getAttribute('data-user-color-scheme') === 'dark' ? dark : light;
+        for (let attribute in attributes) {
+          var value = attributes[attribute];
+          if (value === undefined || value === null || value === '') {
+            delete attributes[attribute];
+          }
+        }
+        var s = document.createElement('script');
+        s.setAttribute('src', 'https://giscus.app/client.js');
+        s.setAttribute('crossorigin', 'anonymous');
+        for (let attribute in attributes) {
+          s.setAttribute(attribute, attributes[attribute]);
+        }
+        var ss = document.getElementsByTagName('script');
+        var e = ss.length > 0 ? ss[ss.length - 1] : document.head || document.documentElement;
+        e.parentNode.insertBefore(s, e.nextSibling);
+      });
+    </script>
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content search-modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3 search-modal-body">
+        <div class="elastic-search-wrap">
+          <div class="elastic-search-shell" id="elastic-search-shell">
+            <button type="button" class="elastic-search-trigger" id="elastic-search-trigger" aria-label="搜索">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                <path d="M16.2 16.2L21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+              </svg>
+            </button>
+            <div class="elastic-search-field">
+              <label class="search-label-sr" for="local-search-input">关键词</label>
+              <input type="text" id="local-search-input" class="form-control validate" placeholder="关键词" autocomplete="off">
+            </div>
+          </div>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    function isExpandAllEnabled() {
+      return CONFIG.toc && CONFIG.toc.expand_all === true;
+    }
+    function expandAllToc() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .tocbot-is-collapsed').removeClass('tocbot-is-collapsed');
+    }
+    function updateTocToggle($li, $childList) {
+      var $toggle = $li.children('.toc-toggle');
+      if ($toggle.length === 0) { return; }
+      var collapsed = $childList.hasClass('tocbot-is-collapsed');
+      $toggle
+        .toggleClass('toc-toggle-collapsed', collapsed)
+        .toggleClass('toc-toggle-expanded', !collapsed);
+    }
+    function bindTocToggle() {
+      if (!isExpandAllEnabled()) { return; }
+      jQuery('#toc-body .toc-list-item').each(function() {
+        var $li = jQuery(this);
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) {
+          if ($li.children('.toc-toggle').length === 0) {
+            $li.prepend('<span class="toc-toggle toc-toggle-placeholder" aria-hidden="true">›</span>');
+          }
+          return;
+        }
+
+        if ($li.children('.toc-toggle').length === 0) {
+          $li.prepend('<span class="toc-toggle toc-toggle-expanded" aria-hidden="true">›</span>');
+        }
+        updateTocToggle($li, $childList);
+      });
+      jQuery('#toc-body').off('click.tocToggle').on('click.tocToggle', '.toc-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $li = jQuery(this).parent('.toc-list-item');
+        var $childList = $li.children('ol');
+        if ($childList.length === 0) { return; }
+        $childList.toggleClass('tocbot-is-collapsed');
+        updateTocToggle($li, $childList);
+      });
+      if (!window.__tocToggleObserver) {
+        window.__tocToggleObserver = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') { return; }
+            var $list = jQuery(mutation.target);
+            var $li = $list.parent('.toc-list-item');
+            if ($li.length === 0) { return; }
+            updateTocToggle($li, $list);
+          });
+        });
+        jQuery('#toc-body ol').each(function() {
+          window.__tocToggleObserver.observe(this, { attributes: true });
+        });
+      }
+    }
+    var tocConfig = Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc);
+    if (isExpandAllEnabled()) {
+      tocConfig.collapseDepth = 6;
+    }
+    window.tocbot.init(tocConfig);
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+    expandAllToc();
+    bindTocToggle();
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+        expandAllToc();
+        bindTocToggle();
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/openkounter.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
+<script src="/js/custom.js"></script>
+<script src="/js/muse-assistant.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+    <!-- 悬浮音乐卡片 -->
+    <div id="music-float" class="music-float">
+      <div id="music-toggle-btn" class="music-toggle-btn" title="音乐">
+        <div class="music-btn-cover"></div>
+        <div class="music-btn-bars">
+          <span class="music-btn-bar"></span>
+          <span class="music-btn-bar"></span>
+          <span class="music-btn-bar"></span>
+          <span class="music-btn-bar"></span>
+          <span class="music-btn-bar"></span>
+        </div>
+      </div>
+      <div id="music-panel" class="music-panel">
+        <div class="music-panel-header">
+          <span class="music-panel-title">Music</span>
+          <span id="music-panel-close" class="music-panel-close">&times;</span>
+        </div>
+        <meting-js
+          server="netease"
+          type="playlist"
+          id="18054072706"
+          fixed="false"
+          autoplay="false"
+          order="list"
+          loop="all"
+          list-folded="false"
+          list-max-height="240px"
+          theme="#30a9de">
+        </meting-js>
+      </div>
+    </div>
+  
+
+  
+    
+    
+    <div
+      id="xih-muse"
+      class="muse-assistant"
+      data-endpoint="https://api.yx2005.top/api/xih-muse"
+      data-name='MuseCat'
+      data-subtitle="AI小助手"
+      data-welcome="主人你好，我是 MuseCat。可以陪你聊天、总结文章、润色文案, 也可以帮你整理博客灵感。"
+      data-placeholder="和 MuseCat 说点什么..."
+      data-empty-hint="先在 _config.fluid.yml 里填写 muse_assistant.endpoint, 再部署 Vercel 云函数后就能开始聊天。"
+      data-images='["/img/muse/muse_1.png","/img/muse/muse_2.png","/img/muse/muse_3.png","/img/muse/muse_4.png","/img/muse/muse_5.png","/img/muse/muse_6.png","/img/muse/muse_7.png","/img/muse/muse_8.png","/img/muse/muse_9.png","/img/muse/muse_10.png","/img/muse/muse_11.png","/img/muse/muse_12.png","/img/muse/muse_13.png","/img/muse/muse_14.png","/img/muse/muse_15.png","/img/muse/muse_16.png"]'
+      data-panel-image="/img/muse/muse_15.png"
+      data-tip-bindings='{"muse_1":"Hi，我是 MuseCat","muse_2":"今天也要一起收集灵感呀","muse_3":"点我一下，我就陪你聊天","muse_4":"我可以帮你总结当前页面","muse_5":"博客文案也可以交给我润色","muse_6":"想不想让我帮你想个标题","muse_7":"把脑海里的想法慢慢告诉我吧","muse_8":"我也能帮你整理文章结构","muse_9":"让我认真想一想答案","muse_10":"有新的灵感冒出来了吗","muse_11":"如果卡住了，就来问我","muse_12":"我可以陪你把思路捋顺","muse_13":"把你的问题交给 MuseCat 吧","muse_14":"写博客、做总结，我都能帮忙","muse_15":"灵感笔记已经翻开啦","muse_16":"欸，被你发现啦，快点我"}'
+      data-emotion-offsets='{"default":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_1":{"shift_x":-10,"left_shift_x":-10,"tip_overlap":-34,"tip_left_gap":4},"muse_2":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_3":{"shift_x":-9,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4},"muse_4":{"shift_x":-10,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4},"muse_5":{"shift_x":-10,"left_shift_x":-10,"tip_overlap":-34,"tip_left_gap":4},"muse_6":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_7":{"shift_x":-7,"left_shift_x":-10,"tip_overlap":-28,"tip_left_gap":3},"muse_8":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_9":{"shift_x":-9,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4},"muse_10":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_11":{"shift_x":-9,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4},"muse_12":{"shift_x":-10,"left_shift_x":-10,"tip_overlap":-34,"tip_left_gap":4},"muse_13":{"shift_x":-9,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4},"muse_14":{"shift_x":-8,"left_shift_x":-10,"tip_overlap":-30,"tip_left_gap":4},"muse_15":{"shift_x":-11,"left_shift_x":-10,"tip_overlap":-36,"tip_left_gap":4},"muse_16":{"shift_x":-9,"left_shift_x":-10,"tip_overlap":-32,"tip_left_gap":4}}'>
+      <button id="muse-launcher" class="muse-launcher" type="button" aria-label="MuseCat">
+        <span class="muse-launcher-hitbox" aria-hidden="true"></span>
+        <img class="muse-emotion muse-emotion-front no-lazyload" src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" data-src="/img/muse/muse_1.png" alt="MuseCat" loading="eager" decoding="async" draggable="false">
+        <img class="muse-emotion muse-emotion-back no-lazyload" src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" data-src="/img/muse/muse_2.png" alt="" aria-hidden="true" loading="eager" decoding="async" draggable="false">
+        <span class="muse-launcher-badge" aria-hidden="true"></span>
+      </button>
+      <div id="muse-tip" class="muse-tip-bubble" aria-hidden="true">
+        <span id="muse-tip-text" class="muse-tip-text"></span>
+      </div>
+
+      <section id="muse-panel" class="muse-panel" aria-hidden="true">
+        <div class="muse-panel-head">
+          <div class="muse-panel-avatar">
+            <img id="muse-panel-portrait" class="muse-panel-portrait no-lazyload" src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" data-src="/img/muse/muse_15.png" alt="MuseCat" loading="eager" decoding="async" draggable="false">
+          </div>
+          <div class="muse-panel-meta">
+            <div class="muse-panel-name">MuseCat</div>
+            <div class="muse-panel-subtitle">AI小助手</div>
+          </div>
+          <button id="muse-close" class="muse-close" type="button" aria-label="关闭助手">&times;</button>
+        </div>
+
+        <div id="muse-messages" class="muse-messages"></div>
+
+        <div class="muse-quick-prompts">
+          
+            <button class="muse-quick-btn" type="button" data-prompt="帮我总结当前页面内容">帮我总结当前页面内容</button>
+          
+            <button class="muse-quick-btn" type="button" data-prompt="给我一个博客文章选题">给我一个博客文章选题</button>
+          
+            <button class="muse-quick-btn" type="button" data-prompt="润色一段技术分享文案">润色一段技术分享文案</button>
+          
+            <button class="muse-quick-btn" type="button" data-prompt="帮我整理博客灵感">帮我整理博客灵感</button>
+          
+        </div>
+
+        <form id="muse-form" class="muse-form">
+          <textarea id="muse-input" class="muse-input" rows="2" placeholder="和 MuseCat 说点什么..."></textarea>
+          <button id="muse-send" class="muse-send" type="submit">发送</button>
+        </form>
+      </section>
+    </div>
+  
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

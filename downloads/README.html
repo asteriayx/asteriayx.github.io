@@ -1,0 +1,22 @@
+<h1 id="如何在博客中提供软件安装包或文件下载？"><a href="#如何在博客中提供软件安装包或文件下载？" class="headerlink" title="如何在博客中提供软件安装包或文件下载？"></a>如何在博客中提供软件安装包或文件下载？</h1><p>由于你使用的是 GitHub Pages 托管博客，GitHub 对代码仓库有严格的大小限制（单个文件最大不能超过 100MB，整个仓库建议不要超过 1GB）。因此，你需要根据文件的大小来决定不同的上传方式：</p>
+<h2 id="情况一：小文件（小于-20MB）"><a href="#情况一：小文件（小于-20MB）" class="headerlink" title="情况一：小文件（小于 20MB）"></a>情况一：小文件（小于 20MB）</h2><p>比如一些小工具、PDF 文档、代码压缩包。</p>
+<ol>
+<li><strong>放置文件</strong>：你可以直接把文件复制到博客根目录的 <code>source/downloads/</code> 文件夹下。<br>（例如：把 <code>v2rayN-Core.zip</code> 放到 <code>F:\MyBlog\myblogs\source\downloads\v2rayN-Core.zip</code>）</li>
+<li><strong>在文章中引用</strong>：在你写博客的 Markdown 文件里，使用以下格式编写超链接：<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">[<span class="hljs-string">点击这里下载 v2rayN-Core 压缩包</span>](<span class="hljs-link">/downloads/v2rayN-Core.zip</span>)<br></code></pre></td></tr></table></figure></li>
+<li><strong>部署</strong>：执行 <code>hexo d -g</code> 后，这个文件就会被打包上传，访客点击链接就能直接下载。</li>
+</ol>
+<hr>
+<h2 id="情况二：大文件-软件安装包（大于-20MB）"><a href="#情况二：大文件-软件安装包（大于-20MB）" class="headerlink" title="情况二：大文件 &#x2F; 软件安装包（大于 20MB）"></a>情况二：大文件 &#x2F; 软件安装包（大于 20MB）</h2><p>比如几百兆的安装程序、游戏包、大型数据集。<strong>坚决不能直接放进博客源码里！</strong> 否则会导致你的 GitHub 仓库爆炸，最后无法部署博客。</p>
+<p><strong>推荐的做法（使用云盘&#x2F;网盘）：</strong></p>
+<ol>
+<li><strong>上传到云盘</strong>：<ul>
+<li>推荐使用：<a href="https://www.lanzou.com/">蓝奏云</a>（对小软件极其友好，不限速，单文件限制 100M）</li>
+<li>或者使用：阿里云盘、百度网盘、123云盘、Google Drive、OneDrive 等。</li>
+</ul>
+</li>
+<li><strong>获取分享链接</strong>：在网盘里生成公开分享链接（如果有提取码也要记下）。</li>
+<li><strong>在文章中引用</strong>：在你的 Markdown 文章中，把网盘的链接贴上去：<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs markdown">[<span class="hljs-string">点击前往蓝奏云下载 X-shell 安装包 (密码: 1234)</span>](<span class="hljs-link">https://wwa.lanzoui.com/b0xxxxxx</span>)<br></code></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<p><strong>开发者进阶方案：GitHub Releases</strong><br>如果你要分享的是开源软件或者脚本，你可以在 GitHub 新建一个专门的空仓库，然后在那个仓库里发布 Release，把安装包上传到 Release 中。然后把那个 Release 的下载链接写在博客里。这种方式完全免费且显得非常专业。</p>
+</blockquote>
